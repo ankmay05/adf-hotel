@@ -1,0 +1,9 @@
+{
+	"name": "hotelnewadfdata",
+	"location": "francecentral",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "43623aa2-ca53-4d95-ab95-0b071ee70ccb",
+		"tenantId": "d56e2678-ec80-42aa-aaa0-6cc1c30630bd"
+	}
+}
