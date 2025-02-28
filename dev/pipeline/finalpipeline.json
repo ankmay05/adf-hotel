@@ -1,5 +1,5 @@
 {
-	"name": "pipeline3",
+	"name": "finalpipeline",
 	"properties": {
 		"activities": [
 			{
@@ -12,7 +12,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pipeline1",
+						"referenceName": "copymetadata",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
@@ -35,7 +35,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pipeline2",
+						"referenceName": "copydatafromcosmotosynapse",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
