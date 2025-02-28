@@ -1,0 +1,97 @@
+{
+	"name": "dataflow1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "bookingdatacosmo",
+						"type": "DatasetReference"
+					},
+					"name": "bookingdata",
+					"description": "Add source datasetadd data from cosmos d"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "customerdata",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "select1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          booking_id as string,",
+				"          property_id as string,",
+				"          customer_id as integer,",
+				"          owner_id as string,",
+				"          check_in_date as string,",
+				"          check_out_date as string,",
+				"          booking_date as string,",
+				"          amount as double,",
+				"          currency as string,",
+				"          property_location as (city as string, country as string),",
+				"          timestamp as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     enableChangeFeed: true,",
+				"     changeFeedStartFromTheBeginning: true,",
+				"     format: 'document') ~> bookingdata",
+				"bookingdata select(mapColumn(",
+				"          booking_id,",
+				"          property_id,",
+				"          customer_id,",
+				"          owner_id,",
+				"          check_in_date,",
+				"          check_out_date,",
+				"          booking_date,",
+				"          amount,",
+				"          currency,",
+				"          timestamp",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          customer_id as integer,",
+				"          first_name as string,",
+				"          last_name as string,",
+				"          email as string,",
+				"          phone_number as string,",
+				"          address as string,",
+				"          city as string,",
+				"          state as string,",
+				"          country as string,",
+				"          zip_code as string,",
+				"          signup_date as date,",
+				"          last_login as timestamp,",
+				"          total_bookings as integer,",
+				"          total_spent as decimal(10,2),",
+				"          preferred_language as string,",
+				"          referral_code as string,",
+				"          account_status as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     staged: true,",
+				"     allowCopyCommand: true,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}
