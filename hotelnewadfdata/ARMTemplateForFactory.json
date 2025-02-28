@@ -37,7 +37,91 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
+			"name": "[concat(parameters('factoryName'), '/copydatafromcosmotosynapse')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "dataflow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "dataflow1",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"bookingdata": {},
+									"sink1": {}
+								}
+							},
+							"staging": {
+								"linkedService": {
+									"referenceName": "AzureDataLakeStorage1",
+									"type": "LinkedServiceReference"
+								},
+								"folderPath": "hoteldata/rawhoteldata"
+							},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine",
+							"continuationSettings": {
+								"customizedCheckpointKey": "f233eb8b-a75b-4261-95d5-417e1ba48998"
+							}
+						}
+					},
+					{
+						"name": "Stored procedure1",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "dataflow1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[airbnb].[BookingAggregation]"
+						},
+						"linkedServiceName": {
+							"referenceName": "AzureSynapseAnalytics1",
+							"type": "LinkedServiceReference"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/dataflow1')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureSynapseAnalytics1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/copymetadata')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -298,91 +382,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/pipeline2')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "dataflow1",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "dataflow1",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"bookingdata": {},
-									"sink1": {}
-								}
-							},
-							"staging": {
-								"linkedService": {
-									"referenceName": "AzureDataLakeStorage1",
-									"type": "LinkedServiceReference"
-								},
-								"folderPath": "hoteldata/rawhoteldata"
-							},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine",
-							"continuationSettings": {
-								"customizedCheckpointKey": "f233eb8b-a75b-4261-95d5-417e1ba48998"
-							}
-						}
-					},
-					{
-						"name": "Stored procedure1",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [
-							{
-								"activity": "dataflow1",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[airbnb].[BookingAggregation]"
-						},
-						"linkedServiceName": {
-							"referenceName": "AzureSynapseAnalytics1",
-							"type": "LinkedServiceReference"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/dataflow1')]",
-				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]",
-				"[concat(variables('factoryId'), '/linkedServices/AzureSynapseAnalytics1')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pipeline3')]",
+			"name": "[concat(parameters('factoryName'), '/finalpipeline')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -397,7 +397,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
-								"referenceName": "pipeline1",
+								"referenceName": "copymetadata",
 								"type": "PipelineReference"
 							},
 							"waitOnCompletion": true,
@@ -421,7 +421,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
-								"referenceName": "pipeline2",
+								"referenceName": "copydatafromcosmotosynapse",
 								"type": "PipelineReference"
 							},
 							"waitOnCompletion": true,
@@ -435,8 +435,8 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/pipeline1')]",
-				"[concat(variables('factoryId'), '/pipelines/pipeline2')]"
+				"[concat(variables('factoryId'), '/pipelines/copymetadata')]",
+				"[concat(variables('factoryId'), '/pipelines/copydatafromcosmotosynapse')]"
 			]
 		},
 		{
